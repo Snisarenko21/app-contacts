@@ -1,25 +1,25 @@
 const fs = require("fs/promises");
-const { join } = require("path");
+const path = require("path");
 const Jimp = require("jimp");
 const { User } = require("../../models/users");
 
-const avatarsDir = join(__dirname, "../../", "public", "avatars");
+const avatarsDir = path.join(__dirname, "../../", "public", "avatars");
 
 const updateAvatar = async (req, res) => {
   try {
     const { _id } = req.user;
-    const { path: tempUpload, filename } = req.file;
+    const { path: tempUpload } = req.file;
 
-    const [extention] = filename.split(".").reverse();
+    const img = await Jimp.read(tempUpload);
+
+    img.cover(250, 250).write(tempUpload);
+
+    const extention = tempUpload.split(".").pop();
     const avatarName = `${_id}.${extention}`;
-
-    const resultUpload = join(avatarsDir, avatarName);
+    const resultUpload = path.join(avatarsDir, avatarName);
     await fs.rename(tempUpload, resultUpload);
 
-    const img = await Jimp.read(resultUpload);
-    await img.cover(250, 250).write(resultUpload);
-
-    const avatarURL = join("avatars", resultUpload);
+    const avatarURL = path.join("avatars", resultUpload);
     await User.findByIdAndUpdate(_id, { avatarURL });
     res.json({
       avatarURL,
