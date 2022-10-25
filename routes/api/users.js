@@ -5,6 +5,14 @@ const { schemas } = require("../../models/users");
 
 const router = express.Router();
 
+router.get("/verify/:verificationToken", ctrlWrapper(ctrl.verify));
+
+router.post(
+  "/verify",
+  validation(schemas.verifyEmailSchema),
+  ctrlWrapper(ctrl.resendVerify)
+);
+
 router.post(
   "/register",
   validation(schemas.joiUserSchema),
